@@ -32,8 +32,11 @@ how long things are taking and asjust as necessary.
 
 Thus:
 ``|000001|0111111|1111|0000|0111``
+
 ``|------|-------|----|----|----``
+
 ``|Bulb  |Bright |Blue|Grn |Red``
+
 ``|=1    |=127*  |15  |0   |7``
 
 *Maximum brightness should be 127, going higher can reportedly burn out a light
