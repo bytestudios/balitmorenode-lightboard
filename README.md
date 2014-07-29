@@ -31,10 +31,10 @@ to turn on and off the power, say, or to read memory.  As such, an oscilloscope 
 how long things are taking and asjust as necessary.
 
 Thus:
-|000001|0111111|1111|0000|0111
+`|000001|0111111|1111|0000|0111
 |------|-------|----|----|----
 |Bulb  |Bright |Blue|Grn |Red
-|=1    |=127*  |15  |0   |7
+|=1    |=127*  |15  |0   |7`
 *Maximum brightness should be 127, going higher can reportedly burn out a light
 
 In order for a strand to be written, assuming the strand is 24 lights, you'll send 24 x 20 bytes. Each
@@ -52,7 +52,7 @@ the bytes to be sent.  Thus, if you want to turn on all the registers (0b1111111
 If you wanted 0b01001000, you'd send chr(72), which is incidentally the capital letter H.
 
 Our board is laid out like this, each box is four strands
-|-------------------|-------------------|
+`|-------------------|-------------------|
 |PORTB              |PORTA              |
 |-------------------|-------------------|
 |PORTL              |PORTF              |
@@ -64,4 +64,4 @@ Our board is laid out like this, each box is four strands
 |PORTK              |PORTC              |
 |-------------------|-------------------|
 |PORTK              |PORTA              |
-|-------------------|-------------------|
+|-------------------|-------------------|`
