@@ -70,3 +70,30 @@ Our board is laid out like this, each box is four strands
     |-------------------|-------------------|
     |PORTK              |PORTA              |
     |-------------------|-------------------|`
+
+### Arduino Mega code ###
+
+The Mega's code has some extra parts to it, but the setup function first paints the board in the order
+we want the bulbs to be painted, so sendsome_left and sendsome_right just send the same data to all left
+or right banks, and our case, 0b00000001000011001000 + a brightness, so it just gets brighter.
+
+the Mega's serial awaits 60 chars, enough for a bulb paint for three strands (20 bytes in 3 registers) and
+then paints that bulb in either the left or right strand.  Then it awaits for the next 60, et on.
+
+For the moment, paint_array(), send_a_column() and send_string_data() are not used, but will be for
+an Arduino-only mode (tbd), if there's no serial commands, say.
+
+### Python code ###
+
+control.py is the proof of concept that this works, and can send a variety of things to the board.
+
+convertImageToPins(image, x-offset) takes an image array and breaks it apart into the requisite
+registers and returns the serial output of the first 47 columns.  x-offset is the offset where
+to start that send.  sendSerialToArduino sends that output across the serial port.
+
+createTextPage(this_text, font_file, font_size, this_x, this_y) creates an image with text on it, with
+attributes including which font, what size, and the x/y position.  panAndDisplayLongText takes any
+width >47 image and pans the image by sending each panned part across to convertImageToPins
+
+The rest of the, for now, just reads the most recent Twitter post for balitmorenode and displays it,
+panning it across the page.  getTwitterStatus(n) gets the nth most recent post.

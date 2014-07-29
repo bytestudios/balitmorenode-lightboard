@@ -168,10 +168,10 @@ def panAndDisplayLongText(display_text, offset_y):
 
 
 
-api = twitter.Api(consumer_key='AmRUpKG8WAdpHpQkhkPxZjCM6',
-                      consumer_secret='bWmjiIpgSISs40haFI0i9rvwUFsYTjSzaVvLH8YmMqapYKXqzo',
-                      access_token_key='20867831-DowaligUQju9o53wsrbKqrBUfRRgsqOO9PcuzZwGc',
-                      access_token_secret='0oHr3XXZHTaP4rR8gGWVx9Wb3UPL0ilLSfj7yavW7UGrI')
+api = twitter.Api(consumer_key='',
+                      consumer_secret='',
+                      access_token_key='',
+                      access_token_secret='')
 #print api.VerifyCredentials()
 statuses = api.GetUserTimeline(screen_name='@baltimorenode')
 
