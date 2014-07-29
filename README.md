@@ -31,8 +31,8 @@ to turn on and off the power, say, or to read memory.  As such, an oscilloscope 
 how long things are taking and asjust as necessary.
 
 Thus:
-
-`|000001|0111111|1111|0000|0111
+`
+|000001|0111111|1111|0000|0111
 
 |------|-------|----|----|----
 
