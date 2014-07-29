@@ -56,6 +56,7 @@ the bytes to be sent.  Thus, if you want to turn on all the registers (0b1111111
 If you wanted 0b01001000, you'd send chr(72), which is incidentally the capital letter H.
 
 Our board is laid out like this, each box is four strands
+
     |-------------------|-------------------|
     |PORTB              |PORTA              |
     |-------------------|-------------------|
