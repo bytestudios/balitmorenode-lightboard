@@ -1,11 +1,19 @@
+from math import ceil
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from numpy import array
 import numpy as np
 import struct
-import serial, time
+import serial
+import time
 import twitter
+#import pygame
+#from webkit2png import WebkitRenderer, init_qtgui
+
+# to make pygame not have a screen
+import os 
+os.environ['SDL_VIDEODRIVER'] = 'dummy'
 
 def find_arduino():
     locations=['/dev/cu.usbmodem1421','/dev/cu.usbmodem1411','/dev/ttyACM0',
@@ -30,7 +38,15 @@ def find_arduino():
     print "Could not find arduino!"
     return None
 
-def convertImageToPins(img, xoffset):
+
+def convertImgToArr(img):
+	arr = array(img) # map an array out of the image
+	#print arr
+	arr = zip(*arr) # flip axis to read column at a time
+	return arr
+
+
+def convertArrToPins(arr, xoffset):
 	brightness = 126976 # default brightness (for now) (max 111110 253952)
 	column_i = 0
 
@@ -42,9 +58,6 @@ def convertImageToPins(img, xoffset):
 	mypacketL = []
 	mypacketK = []
 
-	arr = array(img) # map an array out of the image
-	arr = zip(*arr) # flip axis to read column at a time
-
 	for a in range(0+xoffset,47+xoffset):
 		column = arr[a]
 		left_bank = 1 if column_i<24 else 0 #left or right
@@ -52,8 +65,8 @@ def convertImageToPins(img, xoffset):
 		# iterate through pixels, save into cdata
 		cdata = []
 		for j in range(0,24):
-			bright = (int)(column[j][0] + column[j][1]+ column[j][2]) / 2 * 4096
-			cdata.append((column[j][0]/16) + ((column[j][1]/16) << 4) + ((column[j][2]/16) << 8) + bright)
+			#bright = (int)(column[j][0] + column[j][1]+ column[j][2]) / 2 * 4096
+			cdata.append((column[j][0]/16) + ((column[j][1]/16) << 4) + ((column[j][2]/16) << 8) + brightness)
 		#	if j < 24 and column_i == 0:
 		#		print column[j]
 		#		print column[j][0]/16
@@ -189,6 +202,29 @@ def panAndDisplayLongText(display_text, offset_y):
 	return 'done'
 
 
+# def rainbow(d_lights):
+# 	lights = yield d_lights
+# 	tq_index = 0
+# 	width, height = yield lights.d_size()
+# 	surf = pygame.Surface((width,height))
+# 	pixels = np.zeros([width,height,3], np.uint8)
+# 	while True:
+# 		#start rendering a cycle.
+# 		yield lights.d_acquire()
+# 		for p in xrange(0, 360*7, 5):
+# 			for x in xrange(0, width):
+# 				for y in xrange(0, height):
+# 					p_rad = p/180.*3.14159
+# 					hue = (2+math.sin(float(x)/width-p_rad/7+0.5)+math.sin(float(y)/height-p_rad))/4
+# 					(r,g,b) = colorsys.hsv_to_rgb(hue,1,1)
+# 					pixels[x,y,0] = int(255*r)
+# 					pixels[x,y,1] = int(255*g)
+# 					pixels[x,y,2] = int(255*b)
+# 			pygame.surfarray.blit_array(surf,pixels)
+# 			lights.d_display(surf)
+# 			yield d_wait(0) #this returns control to twisted temporarily.
+# 		lights.release()
+
 ser = serial.Serial(find_arduino(), 1000000)
 #ser = serial.Serial('/dev/ttyACM0', 1000000)
 #ser = serial.Serial('/dev/cu.usbmodem1421', 1000000)
@@ -207,54 +243,73 @@ api = twitter.Api(consumer_key='AmRUpKG8WAdpHpQkhkPxZjCM6',
 #print api.VerifyCredentials()
 statuses = api.GetUserTimeline(screen_name='@baltimorenode')
 
-img = Image.open("images/47x24.png")
-#img = Image.open("lilbit.jpg")
-#img = Image.open("fish.jpg")
-#img = Image.new('RGBA', (47, 24), (30, 30, 30, 0));
+#rainbow()
 
-#draw = ImageDraw.Draw(img)
-#draw.line((0,0, 46,24), fill='#336600', width=3)
-#draw.line((0,24, 46,0), fill='#003366', width=3)
-#font = ImageFont.truetype("reflex.ttf", 15)
-#draw.text((-1, 1), "hi node", font=font, fill=(255,131,0))
-#img = Image.open("47x24.png")
+
+
+# pygame.init()
+# screen = pygame.display.set_mode((47,24), pygame.NOFRAME).convert()
+# screen = screen.convert_alpha()
+# #screen = pygame.image.load("images/fish.jpg")
+# screen.fill([123,240,67])
+# pygame.draw.circle(screen, [255, 0, 0],[23, 12], 8)
+# myarray = pygame.surfarray.pixels3d(screen)
+# sendSerialToArduino(convertArrToPins(myarray, 0))
+# 
+# screen.fill([123,240,67])
+# pygame.draw.circle(screen, [255, 0, 0],[23, 12], 10)
+# myarray = pygame.surfarray.pixels3d(screen)
+# sendSerialToArduino(convertArrToPins(myarray, 0))
+
+
+img = Image.new('RGB', (47, 24), (16, 16, 16));
 draw = ImageDraw.Draw(img)
-font = ImageFont.truetype("fonts/pixel.ttf", 14)
-#font = ImageFont.truetype("reflex.ttf", 10)
-draw.text((0, 0), "reading", font=font, fill=(200,200,200))
-draw.text((18, 10), "serial", font=font, fill=(200,200,200))
-
-sendSerialToArduino(convertImageToPins(img, 0))
-#time.sleep (5)
-# img = Image.new('RGBA', (47, 24), (20, 20, 20, 0));
-# draw = ImageDraw.Draw(img)
 # draw.line((0,0, 46,24), fill='#224400', width=3)
 # draw.line((0,24, 46,0), fill='#002244', width=3)
-# font = ImageFont.truetype("reflex.ttf", 10)
-# draw.text((0, 4), "Hello Node.", font=font, fill=(255,181,40))
-#img = Image.open("fish.jpg")
-#time.sleep(5)
-def getTwitterStatus(which):
-	this_current_status = '--not connected--'
-	i = 0
-	for s in statuses:
-		this_current_status = s.text
-		#remove links
-		if this_current_status.find('http://') > 0:
-			this_current_status = this_current_status[:this_current_status.find('http://')]
-		i += 1
-		if i==which:
-			return this_current_status
-			break
+# sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
+# draw.rectangle((0,0,47,24), fill='#660066')
+# sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
 
-current_status = getTwitterStatus(1)
-panAndDisplayLongText(current_status, 1)
 
-current_status = getTwitterStatus(2)
-panAndDisplayLongText(current_status, 10)
+def paintPacman(draw, x, y, size):
+	curtime = time.time()
+	pacmansize = int(ceil(10*(ceil(curtime) - curtime)) - 5) * 5
+	print pacmansize
+	draw.pieslice((x, y , x+size, y+size), 30+pacmansize, 330-pacmansize, fill="#ffff00")
+	return draw
 
-current_status = getTwitterStatus(3)
-panAndDisplayLongText(current_status, 5)
 
+for i in range(0 ,20):
+	draw.rectangle((3,3,44,21), fill='#000066')
+	draw = paintPacman(draw, 4, 4, 10)
+	sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
+	time.sleep(.001)
+
+
+# time.sleep (.002)
+
+#tempvalue = myarray[10][10]
+# for i in range(0 ,20, 5):
+# 	myarray = [[[ 22, 0+(row*4), 105] for col in range(24)] for row in range(47)]
+# 	myarray[5][i] = [200,100,0]
+# 	myarray[5][i+1] = [200,100,0]
+# 	myarray[5][i+2] = [200,100,0]
+# 	myarray[5][i+3] = [200,100,0]
+# 	myarray[6][i] = [200,100,0]
+# 	myarray[6][i+1] = [200,100,0]
+# 	myarray[6][i+2] = [200,100,0]
+# 	myarray[6][i+3] = [200,100,0]
+# 	sendSerialToArduino(convertArrToPins(myarray, 0))
+# 	time.sleep (.0005)
+
+#myarray[10][10] = tempvalue
+#sendSerialToArduino(convertArrToPins(myarray, 0))
+
+
+
+#img = Image.open("images/fish.jpg")
+#sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
+#img = Image.open("images/lilbit.jpg")
+#sendSerialToArduino(convertImageToPins(img, 0))
 
 ser.close()

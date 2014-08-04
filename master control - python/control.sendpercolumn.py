@@ -7,28 +7,9 @@ import struct
 import serial, time
 import twitter
 
-def find_arduino():
-    locations=['/dev/cu.usbmodem1421','/dev/cu.usbmodem1411','/dev/ttyACM0',
-               '/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2','/dev/ttyUSB3',  
-               '/dev/ttyS0','/dev/ttyS1','/dev/ttyS2','/dev/ttyS3',
-               'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8']
-    try:
-        import serial.tools.list_ports as list_ports
-        locations += [port[0] for port in list_ports.comports()]
-    except:
-        pass
-
-    for device in locations:    
-        try:    
-            print "Trying...",device
-            #FIXME, opening this up is a kludge
-            arduino = serial.Serial(device, 1000000)
-            del arduino
-            return device
-        except:    
-            print "Failed to connect on",device     
-    print "Could not find arduino!"
-    return None
+#ser = serial.Serial('/dev/ttyACM0', 1000000)
+ser = serial.Serial('/dev/cu.usbmodem1421', 1000000)
+time.sleep(2)
 
 def convertImageToPins(img, xoffset):
 	brightness = 126976 # default brightness (for now) (max 111110 253952)
@@ -47,12 +28,12 @@ def convertImageToPins(img, xoffset):
 
 	for a in range(0+xoffset,47+xoffset):
 		column = arr[a]
-		left_bank = 1 if column_i<24 else 0 #left or right
+		left_bank = 1 if column_i<23 else 0 #left or right
 		#print '----line {}----'.format(column_i)
 		# iterate through pixels, save into cdata
 		cdata = []
 		for j in range(0,24):
-			bright = (int)(column[j][0] + column[j][1]+ column[j][2]) / 2 * 4096
+			bright = (int)(column[j][0] + column[j][1]+ column[j][2]) / 3 * 4096
 			cdata.append((column[j][0]/16) + ((column[j][1]/16) << 4) + ((column[j][2]/16) << 8) + bright)
 		#	if j < 24 and column_i == 0:
 		#		print column[j]
@@ -132,6 +113,7 @@ def convertImageToPins(img, xoffset):
 			mypacketK.append(portk)
 
 
+		column_i += 1
 		#print 'packet: {}'.format(len(mypacketE))
 		#print mypacketB
 		if column_i < 24:
@@ -148,8 +130,6 @@ def convertImageToPins(img, xoffset):
 		mypacketF = []
 		mypacketL = []
 		mypacketK = []
-
-		column_i += 1
 		#if column_i == 30: break
 	return serial_output
 
@@ -157,9 +137,7 @@ def convertImageToPins(img, xoffset):
 def sendSerialToArduino(this_output):
 	for serial_part in this_output:
 		#print len(serial_part)
-		time.sleep (.0005)
-		#uncomment below to get a hex 'page' to hardcode into arduino
-		#print '"'+"".join("\\x%02x" % i for i in serial_part)+'"'
+		time.sleep (.0015)
 		ser.write ([chr(i) for i in serial_part])
 
 
@@ -181,7 +159,7 @@ def createTextPage(this_text, font_file, font_size, this_x, this_y):
 
 def panAndDisplayLongText(display_text, offset_y):
 	# create image that has whole tweet
-	img = createTextPage(current_status, 'fonts/pixel.ttf', 14, 0, offset_y)
+	img = createTextPage(current_status, 'pixel.ttf', 14, 0, offset_y)
 	image_x, image_y = img.size
 	#page through the image
 	for i in range(0, image_x - 47, 4):
@@ -189,25 +167,15 @@ def panAndDisplayLongText(display_text, offset_y):
 	return 'done'
 
 
-ser = serial.Serial(find_arduino(), 1000000)
-#ser = serial.Serial('/dev/ttyACM0', 1000000)
-#ser = serial.Serial('/dev/cu.usbmodem1421', 1000000)
-time.sleep(2)
 
-
-
-# api = twitter.Api(consumer_key='',
-#                       consumer_secret='',
-#                       access_token_key='',
-#                       access_token_secret='')
-api = twitter.Api(consumer_key='AmRUpKG8WAdpHpQkhkPxZjCM6',
-                      consumer_secret='bWmjiIpgSISs40haFI0i9rvwUFsYTjSzaVvLH8YmMqapYKXqzo',
-                      access_token_key='20867831-DowaligUQju9o53wsrbKqrBUfRRgsqOO9PcuzZwGc',
-                      access_token_secret='0oHr3XXZHTaP4rR8gGWVx9Wb3UPL0ilLSfj7yavW7UGrI')
+api = twitter.Api(consumer_key='',
+                      consumer_secret='',
+                      access_token_key='',
+                      access_token_secret='')
 #print api.VerifyCredentials()
 statuses = api.GetUserTimeline(screen_name='@baltimorenode')
 
-img = Image.open("images/47x24.png")
+img = Image.open("47x24.png")
 #img = Image.open("lilbit.jpg")
 #img = Image.open("fish.jpg")
 #img = Image.new('RGBA', (47, 24), (30, 30, 30, 0));
@@ -219,13 +187,13 @@ img = Image.open("images/47x24.png")
 #draw.text((-1, 1), "hi node", font=font, fill=(255,131,0))
 #img = Image.open("47x24.png")
 draw = ImageDraw.Draw(img)
-font = ImageFont.truetype("fonts/pixel.ttf", 14)
+font = ImageFont.truetype("pixel.ttf", 14)
 #font = ImageFont.truetype("reflex.ttf", 10)
 draw.text((0, 0), "reading", font=font, fill=(200,200,200))
 draw.text((18, 10), "serial", font=font, fill=(200,200,200))
 
 sendSerialToArduino(convertImageToPins(img, 0))
-#time.sleep (5)
+
 # img = Image.new('RGBA', (47, 24), (20, 20, 20, 0));
 # draw = ImageDraw.Draw(img)
 # draw.line((0,0, 46,24), fill='#224400', width=3)
