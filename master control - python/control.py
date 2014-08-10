@@ -9,7 +9,7 @@ import twitter
 
 def find_arduino():
     locations=['/dev/cu.usbmodem1421','/dev/cu.usbmodem1411','/dev/ttyACM0',
-               '/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2','/dev/ttyUSB3',  
+               '/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2','/dev/ttyUSB3',
                '/dev/ttyS0','/dev/ttyS1','/dev/ttyS2','/dev/ttyS3',
                'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8']
     try:
@@ -18,15 +18,15 @@ def find_arduino():
     except:
         pass
 
-    for device in locations:    
-        try:    
+    for device in locations:
+        try:
             print "Trying...",device
             #FIXME, opening this up is a kludge
             arduino = serial.Serial(device, 1000000)
             del arduino
             return device
-        except:    
-            print "Failed to connect on",device     
+        except:
+            print "Failed to connect on",device
     print "Could not find arduino!"
     return None
 
@@ -167,7 +167,7 @@ def createTextPage(this_text, font_file, font_size, this_x, this_y):
 	# choose font and get its size
 	font = ImageFont.truetype(font_file, font_size)
 	text_width, text_height = font.getsize(this_text)
-	img = Image.new('RGB', (text_width, 24), (16, 16, 16));
+	img = Image.new('RGB', (text_width, 24), (4, 4, 4));
 	draw = ImageDraw.Draw(img)
 	#draw.line((0,0, 46,24), fill='#224400', width=3)
 	#draw.line((0,24, 46,0), fill='#002244', width=3)
@@ -184,7 +184,7 @@ def panAndDisplayLongText(display_text, offset_y):
 	img = createTextPage(current_status, 'fonts/pixel.ttf', 14, 0, offset_y)
 	image_x, image_y = img.size
 	#page through the image
-	for i in range(0, image_x - 47, 4):
+	for i in range(0, image_x - 47, 1):
 		sendSerialToArduino(convertImageToPins(img, i))
 	return 'done'
 

@@ -12,12 +12,12 @@ import twitter
 #from webkit2png import WebkitRenderer, init_qtgui
 
 # to make pygame not have a screen
-import os 
+import os
 os.environ['SDL_VIDEODRIVER'] = 'dummy'
 
 def find_arduino():
     locations=['/dev/cu.usbmodem1421','/dev/cu.usbmodem1411','/dev/ttyACM0',
-               '/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2','/dev/ttyUSB3',  
+               '/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2','/dev/ttyUSB3',
                '/dev/ttyS0','/dev/ttyS1','/dev/ttyS2','/dev/ttyS3',
                'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8']
     try:
@@ -26,15 +26,15 @@ def find_arduino():
     except:
         pass
 
-    for device in locations:    
-        try:    
+    for device in locations:
+        try:
             print "Trying...",device
             #FIXME, opening this up is a kludge
             arduino = serial.Serial(device, 1000000)
             del arduino
             return device
-        except:    
-            print "Failed to connect on",device     
+        except:
+            print "Failed to connect on",device
     print "Could not find arduino!"
     return None
 
@@ -247,23 +247,6 @@ statuses = api.GetUserTimeline(screen_name='@baltimorenode')
 
 
 
-# pygame.init()
-# screen = pygame.display.set_mode((47,24), pygame.NOFRAME).convert()
-# screen = screen.convert_alpha()
-# #screen = pygame.image.load("images/fish.jpg")
-# screen.fill([123,240,67])
-# pygame.draw.circle(screen, [255, 0, 0],[23, 12], 8)
-# myarray = pygame.surfarray.pixels3d(screen)
-# sendSerialToArduino(convertArrToPins(myarray, 0))
-# 
-# screen.fill([123,240,67])
-# pygame.draw.circle(screen, [255, 0, 0],[23, 12], 10)
-# myarray = pygame.surfarray.pixels3d(screen)
-# sendSerialToArduino(convertArrToPins(myarray, 0))
-
-
-img = Image.new('RGB', (47, 24), (16, 16, 16));
-draw = ImageDraw.Draw(img)
 # draw.line((0,0, 46,24), fill='#224400', width=3)
 # draw.line((0,24, 46,0), fill='#002244', width=3)
 # sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
@@ -272,18 +255,51 @@ draw = ImageDraw.Draw(img)
 
 
 def paintPacman(draw, x, y, size):
-	curtime = time.time()
-	pacmansize = int(ceil(10*(ceil(curtime) - curtime)) - 5) * 5
-	print pacmansize
-	draw.pieslice((x, y , x+size, y+size), 30+pacmansize, 330-pacmansize, fill="#ffff00")
-	return draw
+  curtime = time.time()
+  pacmansize = int(ceil(10*(ceil(curtime) - curtime)) - 10) * 2
+  print pacmansize
+  draw.pieslice((x-1, y-1 , x+size+1, y+size+1), 30+pacmansize, 330-pacmansize, fill="#000033")
+  draw.pieslice((x, y, x+size, y+size), 30+pacmansize, 330-pacmansize, fill="#ffff00")
+  return draw
 
 
-for i in range(0 ,20):
-	draw.rectangle((3,3,44,21), fill='#000066')
-	draw = paintPacman(draw, 4, 4, 10)
-	sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
-	time.sleep(.001)
+def paintPacmanPass(draw):
+  for i in range(0 ,70, 3):
+    fillvar = '#0000'+str(10+i)
+    draw.rectangle((1,1,45,22), fill=(fillvar))
+    draw = paintPacman(draw, i-19, 4, 15)
+    draw.rectangle((0,0,46,23), outline="#ffffff")
+    sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
+    time.sleep(.001)
+
+img = Image.open("images/node2.png")
+sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
+time.sleep (2)
+
+img = Image.new('RGB', (47, 24), (16, 16, 16))
+draw = ImageDraw.Draw(img)
+for i in range(0,24):
+  draw.line((0, i, 46, i), width=1, fill=(255-i*10,0,i*10))
+
+#sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
+#time.sleep(2)
+for i in range(0,24):
+  draw.line((0, i, 46, i), width=1, fill=(255-i*10,i*10,255-i*10))
+
+font = ImageFont.truetype("fonts/cursive.ttf", 30)
+#draw.text((1, -2), "node", font=font, fill=(0,0,0))
+draw.text((3, -1), "node", font=font, fill=(0,0,0))
+draw.text((2, -2), "node", font=font, fill=(200,0,0))
+
+
+#sendSerialToArduino(convertArrToPins(convertImgToArr(img), 0))
+
+
+#define the page image
+img = Image.new('RGB', (47, 24), (16, 16, 16));
+draw = ImageDraw.Draw(img)
+# lets do some fun things!
+#paintPacmanPass(draw);
 
 
 # time.sleep (.002)
